@@ -360,54 +360,82 @@
   });
 
   // ---------- PDF download ----------
-  // Pack 2 signs per letter page (8.5 x 11 in). Landscape signs stacked vertically.
-  // Portrait signs (page 21 only currently) get one per page.
+  // Pack signs at their NATIVE physical size (do NOT scale up) onto letter pages.
+  // Native sizes: landscape signs are 3.5"×2", portrait sign is ~5.33"×8".
+  // We auto-pack into a row-major grid based on each sign's source dimensions.
   abDownload.addEventListener('click', async () => {
     if (!selected.size) return;
     abDownload.disabled = true;
     abDownload.textContent = 'Building…';
     try {
       const pages = [...selected].sort((a,b) => a-b);
-      // Load all images
       const imgs = await Promise.all(pages.map(p => loadImage(fullUrl(p))));
-      // Determine orientation per image
-      const items = imgs.map((im, i) => ({page: pages[i], img: im, w: im.naturalWidth, h: im.naturalHeight, portrait: im.naturalHeight > im.naturalWidth}));
+      // Convert each sign to its native print size in inches.
+      // The high-res PNGs in /signs/ were rendered at 200 DPI from the source PDF
+      // whose pages are 252×144 pt (3.5"×2") for landscape and 384×576 pt (~5.33"×8") for portrait.
+      // Source DPI = 200, so divide pixel dim by 200 to get inches.
+      const SOURCE_DPI = 200;
+      const items = imgs.map((im, i) => ({
+        page: pages[i],
+        img: im,
+        wIn: im.naturalWidth / SOURCE_DPI,
+        hIn: im.naturalHeight / SOURCE_DPI,
+        portrait: im.naturalHeight > im.naturalWidth,
+      }));
 
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({unit: 'in', format: 'letter', orientation: 'portrait'});
 
-      // Layout constants
       const PAGE_W = 8.5, PAGE_H = 11.0;
-      const M = 0.4; // margin
+      const M = 0.4;             // page margin
+      const GAP = 0.2;           // gap between signs
       const usableW = PAGE_W - 2*M;
       const usableH = PAGE_H - 2*M;
-      const gap = 0.3; // gap between two stacked signs
-      const slotH = (usableH - gap) / 2;
 
+      // Greedy row-major packing: place signs left-to-right, top-to-bottom, at native size.
       let firstPage = true;
       let i = 0;
       while (i < items.length) {
         if (!firstPage) doc.addPage();
         firstPage = false;
-        const a = items[i];
-        const b = (i + 1 < items.length) ? items[i + 1] : null;
-        // If A is portrait, give it the full page on its own
-        if (a.portrait) {
-          drawFitted(doc, a, M, M, usableW, usableH);
-          i += 1;
-          continue;
-        }
-        // A landscape: top half
-        drawFitted(doc, a, M, M, usableW, slotH);
-        // B (if exists and landscape): bottom half
-        if (b && !b.portrait) {
-          drawFitted(doc, b, M, M + slotH + gap, usableW, slotH);
-          i += 2;
-        } else if (b && b.portrait) {
-          // B is portrait — give it its own page next
-          i += 1;
-        } else {
-          i += 1;
+        // Pack this page
+        let cursorY = M;
+        while (i < items.length) {
+          // Start a new row with current item
+          const rowItems = [];
+          let rowH = 0;
+          let rowW = 0;
+          // Greedy: pack as many across as fit at the current row's height (use first item's height as row height)
+          // But we want simple grid: same-size items on same row.
+          // Start row with items[i], then add more items[i+k] as long as their height fits and total width fits.
+          while (i + rowItems.length < items.length) {
+            const it = items[i + rowItems.length];
+            const tentativeRowH = Math.max(rowH, it.hIn);
+            // Check vertical fit
+            if (cursorY + tentativeRowH > M + usableH) break;
+            // Check horizontal fit
+            const tentativeRowW = rowW + (rowItems.length ? GAP : 0) + it.wIn;
+            if (tentativeRowW > usableW) break;
+            // Accept
+            rowItems.push(it);
+            rowW = tentativeRowW;
+            rowH = tentativeRowH;
+          }
+          if (!rowItems.length) {
+            // The next item doesn't fit on this page at all (height too big) — start new page
+            break;
+          }
+          // Center the row horizontally
+          let cursorX = M + (usableW - rowW) / 2;
+          for (const it of rowItems) {
+            // Draw at native size, top-aligned within the row
+            doc.addImage(it.img, 'PNG', cursorX, cursorY, it.wIn, it.hIn, undefined, 'FAST');
+            cursorX += it.wIn + GAP;
+          }
+          cursorY += rowH + GAP;
+          i += rowItems.length;
+          // If next item is portrait and current row was landscape (or vice versa),
+          // optionally start a new row anyway — already handled by the rowH/width logic.
         }
       }
 
@@ -428,16 +456,6 @@
       im.onerror = reject;
       im.src = src;
     });
-  }
-
-  // Draw image scaled to fit slot (slotW x slotH), centered
-  function drawFitted(doc, item, slotX, slotY, slotW, slotH) {
-    const ar = item.w / item.h;
-    let w = slotW, h = slotW / ar;
-    if (h > slotH) { h = slotH; w = slotH * ar; }
-    const x = slotX + (slotW - w) / 2;
-    const y = slotY + (slotH - h) / 2;
-    doc.addImage(item.img, 'PNG', x, y, w, h, undefined, 'FAST');
   }
 
   render();
