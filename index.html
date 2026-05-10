@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Basket Case Grocer · Sign Library</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --ink:#1f1f1f; --muted:#6b6b6b; --line:#d8d4cc; --bg:#faf7f2;
+    --produce:#5a6b47; --hot:#a23a2c; --pastry:#c56a4f;
+    --way:#6b6b6b; --mkt:#3d5a6f; --internal:#9b8e73;
+  }
+  *,*::before,*::after { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.5 "Iowan Old Style","Hoefler Text",Georgia,serif;
+    min-height:100vh;
+  }
+  header {
+    padding:32px 24px 12px; max-width:1100px; margin:0 auto;
+  }
+  header h1 { margin:0; font-size:30px; letter-spacing:0.5px; }
+  header p { margin:6px 0 0; color:var(--muted); font-size:15px; }
+  .controls {
+    max-width:1100px; margin:18px auto 0; padding:0 24px;
+    display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+  }
+  .search {
+    flex:1; min-width:220px; padding:10px 14px;
+    border:1px solid var(--line); border-radius:6px; background:white;
+    font:inherit; font-size:15px; color:var(--ink);
+    transition:border-color .15s;
+  }
+  .search:focus { outline:none; border-color:var(--produce); }
+  .filters {
+    display:flex; gap:6px; flex-wrap:wrap;
+  }
+  .filter-btn {
+    padding:8px 14px; border:1px solid var(--line); border-radius:20px;
+    background:white; cursor:pointer; font:inherit; font-size:13px;
+    color:var(--ink); transition:all .15s;
+    text-transform:uppercase; letter-spacing:0.4px; font-weight:600;
+  }
+  .filter-btn:hover { border-color:var(--ink); }
+  .filter-btn.active { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  main { max-width:1100px; margin:0 auto; padding:24px 24px 64px; }
+  .empty { color:var(--muted); padding:40px 0; text-align:center; }
+  .group { margin-top:32px; }
+  .group h2 {
+    margin:0 0 14px; font-size:14px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--ink); border-bottom:1px solid var(--line); padding-bottom:6px;
+  }
+  .grid {
+    display:grid; gap:14px;
+    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .tile {
+    background:white; border:1px solid var(--line); border-radius:8px;
+    padding:18px 18px 16px; display:flex; flex-direction:column;
+    transition:transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .tile:hover {
+    transform:translateY(-2px); border-color:var(--ink);
+    box-shadow:0 4px 12px rgba(31,31,31,0.06);
+  }
+  .tile .badge {
+    display:inline-block; padding:3px 9px; border-radius:10px;
+    font-size:10px; letter-spacing:0.6px; text-transform:uppercase; font-weight:700;
+    color:white; align-self:flex-start; margin-bottom:10px;
+    font-family: "Helvetica","Arial",sans-serif;
+  }
+  .tile .name {
+    font-size:18px; line-height:1.25; margin:0 0 14px;
+    color:var(--ink); flex:1;
+  }
+  .tile .actions { display:flex; gap:8px; align-items:center; margin-top:auto; }
+  .tile a.go {
+    flex:1; text-align:center; padding:9px 12px;
+    background:var(--ink); color:var(--bg); text-decoration:none;
+    border-radius:5px; font-size:13px; font-weight:600; letter-spacing:0.3px;
+    transition:background .15s;
+  }
+  .tile a.go:hover { background:#000; }
+  .tile .page-num {
+    font-size:11px; color:var(--muted);
+    font-family:"Helvetica","Arial",sans-serif; font-weight:500;
+  }
+  .badge.cat-produce     { background:var(--produce); }
+  .badge.cat-hot_case    { background:var(--hot); }
+  .badge.cat-pastry_case { background:var(--pastry); }
+  .badge.cat-wayfinding  { background:var(--way); }
+  .badge.cat-marketing   { background:var(--mkt); }
+  .badge.cat-internal    { background:var(--internal); }
+
+  details.help {
+    max-width:1100px; margin:24px auto 0; padding:0 24px;
+    color:var(--muted); font-size:13px;
+  }
+  details.help summary { cursor:pointer; color:var(--ink); padding:8px 0; }
+  details.help p { margin:8px 0; line-height:1.55; }
+  footer {
+    text-align:center; color:var(--muted); font-size:12px; padding:32px 0 24px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sign Library</h1>
+  <p>Basket Case Grocer · 46 reusable signs · click any to edit in Canva</p>
+</header>
+<section class="controls">
+  <input id="search" class="search" type="search"
+         placeholder="Search signs (e.g. 'avocado', 'gift card', 'morning')…" autocomplete="off">
+  <div id="filters" class="filters"></div>
+</section>
+<main id="grid"></main>
+<details class="help">
+  <summary>How to use this</summary>
+  <p>1. Find the sign you need (search by name or filter by category).</p>
+  <p>2. Click the sign to open it in Canva. The editor will jump straight to that page of the master template.</p>
+  <p>3. In Canva: <strong>File → Make a copy</strong> so you don't edit the master, then change text, save, and download as PNG/PDF for printing.</p>
+  <p>If you don't have access to the master template, ask Sam to share it with your Canva account.</p>
+</details>
+<footer>Basket Case Grocer · 1801 5th Ave N Nashville</footer>
+
+<script id="data" type="application/json">{
+  "design_id": "DAHJTDdElIs",
+  "edit_base_url": "https://www.canva.com/design/DAHJTDdElIs/edit",
+  "categories": [
+    {"id": "produce",     "label": "Produce",            "color": "#5A6B47"},
+    {"id": "hot_case",    "label": "Hot Case",           "color": "#A23A2C"},
+    {"id": "pastry_case", "label": "Pastry Case",        "color": "#C56A4F"},
+    {"id": "wayfinding",  "label": "Wayfinding",         "color": "#6B6B6B"},
+    {"id": "marketing",   "label": "Marketing & Promos", "color": "#3D5A6F"},
+    {"id": "internal",    "label": "Internal / POS",     "color": "#9B8E73"}
+  ],
+  "templates": [
+    {"page": 1,  "name": "Leave us a Review",         "category": "marketing"},
+    {"page": 2,  "name": "Gift Cards",                "category": "wayfinding"},
+    {"page": 3,  "name": "Strawberry",                "category": "produce"},
+    {"page": 4,  "name": "Corn",                      "category": "produce"},
+    {"page": 5,  "name": "Onion",                     "category": "produce"},
+    {"page": 6,  "name": "Scallion",                  "category": "produce"},
+    {"page": 7,  "name": "Blueberry",                 "category": "produce"},
+    {"page": 8,  "name": "Zucchini",                  "category": "produce"},
+    {"page": 9,  "name": "Cucumber",                  "category": "produce"},
+    {"page": 10, "name": "Squash",                    "category": "produce"},
+    {"page": 11, "name": "Heirloom Tomatoes",         "category": "produce"},
+    {"page": 12, "name": "Granny Smith Apple",        "category": "produce"},
+    {"page": 13, "name": "Pink Lady Apple",           "category": "produce"},
+    {"page": 14, "name": "Avocado",                   "category": "produce"},
+    {"page": 15, "name": "Lemon",                     "category": "produce"},
+    {"page": 16, "name": "Lime",                      "category": "produce"},
+    {"page": 17, "name": "Carrot",                    "category": "produce"},
+    {"page": 18, "name": "Shallots",                  "category": "produce"},
+    {"page": 19, "name": "Garlic",                    "category": "produce"},
+    {"page": 20, "name": "Asparagus",                 "category": "produce"},
+    {"page": 21, "name": "Gift Card Sale (POS Steps)","category": "internal"},
+    {"page": 22, "name": "Cinnamon Roll Bread Pudding","category": "pastry_case"},
+    {"page": 23, "name": "Banana Bread (DF)",         "category": "pastry_case"},
+    {"page": 24, "name": "Zucchini Carrot Cake (GF/DF)","category": "pastry_case"},
+    {"page": 25, "name": "Croissant Sandwich",        "category": "pastry_case"},
+    {"page": 26, "name": "Rotisserie Chicken",        "category": "hot_case"},
+    {"page": 27, "name": "Sushi Rice Salad",          "category": "pastry_case"},
+    {"page": 28, "name": "Free Sample",               "category": "marketing"},
+    {"page": 29, "name": "Free Avocados",             "category": "marketing"},
+    {"page": 30, "name": "Sushi Rice Salad (alt)",    "category": "pastry_case"},
+    {"page": 31, "name": "Chopped Salad",             "category": "hot_case"},
+    {"page": 32, "name": "French Dip",                "category": "hot_case"},
+    {"page": 33, "name": "Turkey Sandwich",           "category": "hot_case"},
+    {"page": 34, "name": "Morning Jam",               "category": "hot_case"},
+    {"page": 35, "name": "Morning Jam (alt)",         "category": "hot_case"},
+    {"page": 36, "name": "BCG Burrito",               "category": "hot_case"},
+    {"page": 37, "name": "Feel Good Bowl",            "category": "hot_case"},
+    {"page": 38, "name": "Cilantro Lime Crema",       "category": "hot_case"},
+    {"page": 39, "name": "Local",                     "category": "wayfinding"},
+    {"page": 40, "name": "Sift Plain Croissant — $5", "category": "pastry_case"},
+    {"page": 41, "name": "Sift Almond Croissant — $5","category": "pastry_case"},
+    {"page": 42, "name": "Sift Vegan Lemon Poppy Seed Bar — $5","category": "pastry_case"},
+    {"page": 43, "name": "Best By 50% Off",           "category": "marketing"},
+    {"page": 44, "name": "10% Off Gift Cards (Promo)","category": "marketing"},
+    {"page": 45, "name": "Suggestion Box · Win a Gift Card","category": "marketing"},
+    {"page": 46, "name": "(Page 46)",                 "category": "marketing"}
+  ]
+}
+</script>
+<script>
+  const data = JSON.parse(document.getElementById('data').textContent);
+  const editBase = data.edit_base_url;
+  let activeFilter = "all";
+  let searchQuery = "";
+
+  // Render category filters
+  const filtersEl = document.getElementById('filters');
+  function pillButton(id, label) {
+    const b = document.createElement('button');
+    b.className = 'filter-btn';
+    b.dataset.cat = id;
+    b.textContent = label;
+    if (id === activeFilter) b.classList.add('active');
+    b.addEventListener('click', () => {
+      activeFilter = id;
+      [...filtersEl.querySelectorAll('.filter-btn')].forEach(x => x.classList.toggle('active', x.dataset.cat === id));
+      render();
+    });
+    return b;
+  }
+  filtersEl.appendChild(pillButton('all', 'All'));
+  data.categories.forEach(c => filtersEl.appendChild(pillButton(c.id, c.label)));
+
+  // Search
+  const searchEl = document.getElementById('search');
+  searchEl.addEventListener('input', e => { searchQuery = e.target.value.toLowerCase().trim(); render(); });
+
+  // Render
+  function urlFor(t) { return editBase + '?page=' + t.page; }
+  function render() {
+    const grid = document.getElementById('grid');
+    const filtered = data.templates.filter(t => {
+      if (activeFilter !== 'all' && t.category !== activeFilter) return false;
+      if (searchQuery && !t.name.toLowerCase().includes(searchQuery)) return false;
+      return true;
+    });
+    if (!filtered.length) {
+      grid.innerHTML = '<div class="empty">No signs match. Try clearing the search or choosing a different category.</div>';
+      return;
+    }
+    // Group by category
+    const groups = {};
+    filtered.forEach(t => { (groups[t.category] = groups[t.category] || []).push(t); });
+    grid.innerHTML = '';
+    data.categories.forEach(cat => {
+      const items = groups[cat.id];
+      if (!items || !items.length) return;
+      const groupEl = document.createElement('section');
+      groupEl.className = 'group';
+      const h = document.createElement('h2');
+      h.textContent = cat.label + ' · ' + items.length;
+      groupEl.appendChild(h);
+      const gridEl = document.createElement('div');
+      gridEl.className = 'grid';
+      items.sort((a,b) => a.page - b.page).forEach(t => {
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        const badge = document.createElement('span');
+        badge.className = 'badge cat-' + t.category;
+        badge.textContent = (data.categories.find(c => c.id === t.category) || {}).label || t.category;
+        tile.appendChild(badge);
+        const nameEl = document.createElement('div');
+        nameEl.className = 'name';
+        nameEl.textContent = t.name;
+        tile.appendChild(nameEl);
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const a = document.createElement('a');
+        a.className = 'go';
+        a.href = urlFor(t);
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = 'Open in Canva';
+        actions.appendChild(a);
+        const pn = document.createElement('span');
+        pn.className = 'page-num';
+        pn.textContent = 'p.' + t.page;
+        actions.appendChild(pn);
+        tile.appendChild(actions);
+        gridEl.appendChild(tile);
+      });
+      groupEl.appendChild(gridEl);
+      grid.appendChild(groupEl);
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>
