@@ -7,6 +7,7 @@
 <style>
   :root {
     --ink:#1f1f1f; --muted:#6b6b6b; --line:#d8d4cc; --bg:#faf7f2;
+    --accent:#5a6b47;
     --produce:#5a6b47; --hot:#a23a2c; --pastry:#c56a4f;
     --way:#6b6b6b; --mkt:#3d5a6f; --internal:#9b8e73;
   }
@@ -14,15 +15,15 @@
   body {
     margin:0; background:var(--bg); color:var(--ink);
     font:16px/1.5 "Iowan Old Style","Hoefler Text",Georgia,serif;
-    min-height:100vh;
+    min-height:100vh; padding-bottom:120px;
   }
   header {
-    padding:32px 24px 12px; max-width:1100px; margin:0 auto;
+    padding:32px 24px 12px; max-width:1200px; margin:0 auto;
   }
   header h1 { margin:0; font-size:30px; letter-spacing:0.5px; }
   header p { margin:6px 0 0; color:var(--muted); font-size:15px; }
   .controls {
-    max-width:1100px; margin:18px auto 0; padding:0 24px;
+    max-width:1200px; margin:18px auto 0; padding:0 24px;
     display:flex; gap:14px; align-items:center; flex-wrap:wrap;
   }
   .search {
@@ -31,10 +32,8 @@
     font:inherit; font-size:15px; color:var(--ink);
     transition:border-color .15s;
   }
-  .search:focus { outline:none; border-color:var(--produce); }
-  .filters {
-    display:flex; gap:6px; flex-wrap:wrap;
-  }
+  .search:focus { outline:none; border-color:var(--accent); }
+  .filters { display:flex; gap:6px; flex-wrap:wrap; }
   .filter-btn {
     padding:8px 14px; border:1px solid var(--line); border-radius:20px;
     background:white; cursor:pointer; font:inherit; font-size:13px;
@@ -43,7 +42,7 @@
   }
   .filter-btn:hover { border-color:var(--ink); }
   .filter-btn.active { background:var(--ink); color:var(--bg); border-color:var(--ink); }
-  main { max-width:1100px; margin:0 auto; padding:24px 24px 64px; }
+  main { max-width:1200px; margin:0 auto; padding:24px 24px 64px; }
   .empty { color:var(--muted); padding:40px 0; text-align:center; }
   .group { margin-top:32px; }
   .group h2 {
@@ -51,40 +50,56 @@
     color:var(--ink); border-bottom:1px solid var(--line); padding-bottom:6px;
   }
   .grid {
-    display:grid; gap:14px;
+    display:grid; gap:16px;
     grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
   }
   .tile {
-    background:white; border:1px solid var(--line); border-radius:8px;
-    padding:18px 18px 16px; display:flex; flex-direction:column;
-    transition:transform .15s, box-shadow .15s, border-color .15s;
+    background:white; border:2px solid var(--line); border-radius:8px;
+    padding:0; display:flex; flex-direction:column; cursor:pointer;
+    overflow:hidden; transition:transform .15s, box-shadow .15s, border-color .15s;
+    position:relative;
   }
   .tile:hover {
-    transform:translateY(-2px); border-color:var(--ink);
+    transform:translateY(-2px);
     box-shadow:0 4px 12px rgba(31,31,31,0.06);
   }
+  .tile.selected {
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(90,107,71,0.18);
+  }
+  .tile.selected::after {
+    content:"✓"; position:absolute; top:6px; right:6px;
+    width:28px; height:28px; border-radius:50%;
+    background:var(--accent); color:white;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:bold;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+  }
+  .tile .thumb {
+    width:100%; aspect-ratio:7/4; background:#f0ece4; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    border-bottom:1px solid var(--line);
+  }
+  .tile .thumb img { display:block; width:100%; height:100%; object-fit:contain; background:white; }
+  .tile .meta {
+    padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; flex:1;
+  }
   .tile .badge {
-    display:inline-block; padding:3px 9px; border-radius:10px;
-    font-size:10px; letter-spacing:0.6px; text-transform:uppercase; font-weight:700;
-    color:white; align-self:flex-start; margin-bottom:10px;
-    font-family: "Helvetica","Arial",sans-serif;
+    display:inline-block; padding:2px 8px; border-radius:10px;
+    font-size:9.5px; letter-spacing:0.6px; text-transform:uppercase; font-weight:700;
+    color:white; align-self:flex-start;
+    font-family:"Helvetica","Arial",sans-serif;
   }
-  .tile .name {
-    font-size:18px; line-height:1.25; margin:0 0 14px;
-    color:var(--ink); flex:1;
-  }
-  .tile .actions { display:flex; gap:8px; align-items:center; margin-top:auto; }
-  .tile a.go {
-    flex:1; text-align:center; padding:9px 12px;
-    background:var(--ink); color:var(--bg); text-decoration:none;
-    border-radius:5px; font-size:13px; font-weight:600; letter-spacing:0.3px;
-    transition:background .15s;
-  }
-  .tile a.go:hover { background:#000; }
-  .tile .page-num {
+  .tile .name { font-size:15px; line-height:1.25; margin:0; color:var(--ink); flex:1; }
+  .tile .footer-row {
+    display:flex; justify-content:space-between; align-items:center;
     font-size:11px; color:var(--muted);
-    font-family:"Helvetica","Arial",sans-serif; font-weight:500;
+    font-family:"Helvetica","Arial",sans-serif;
   }
+  .tile .canva-link {
+    color:var(--muted); text-decoration:none; font-size:11px;
+  }
+  .tile .canva-link:hover { color:var(--ink); text-decoration:underline; }
   .badge.cat-produce     { background:var(--produce); }
   .badge.cat-hot_case    { background:var(--hot); }
   .badge.cat-pastry_case { background:var(--pastry); }
@@ -92,21 +107,46 @@
   .badge.cat-marketing   { background:var(--mkt); }
   .badge.cat-internal    { background:var(--internal); }
 
+  /* Floating action bar */
+  .actionbar {
+    position:fixed; bottom:0; left:0; right:0; z-index:100;
+    background:var(--ink); color:var(--bg);
+    padding:14px 24px; display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 -4px 16px rgba(0,0,0,0.18);
+    transform:translateY(100%); transition:transform .2s ease-out;
+  }
+  .actionbar.visible { transform:translateY(0); }
+  .actionbar .summary {
+    font-size:14px; letter-spacing:0.3px;
+    font-family:"Helvetica","Arial",sans-serif;
+  }
+  .actionbar .summary strong { font-weight:700; font-size:18px; }
+  .actionbar .ab-btns { display:flex; gap:10px; }
+  .ab-btn {
+    padding:11px 22px; border-radius:5px; border:none;
+    font:inherit; font-weight:700; font-size:13px; letter-spacing:0.5px;
+    cursor:pointer; text-transform:uppercase;
+    font-family:"Helvetica","Arial",sans-serif;
+  }
+  .ab-btn.primary { background:white; color:var(--ink); }
+  .ab-btn.primary:hover { background:#f0ece4; }
+  .ab-btn.primary:disabled { opacity:0.6; cursor:wait; }
+  .ab-btn.secondary { background:transparent; color:var(--bg); border:1px solid rgba(250,247,242,0.3); }
+  .ab-btn.secondary:hover { border-color:var(--bg); }
+
   details.help {
-    max-width:1100px; margin:24px auto 0; padding:0 24px;
+    max-width:1200px; margin:24px auto 0; padding:0 24px;
     color:var(--muted); font-size:13px;
   }
   details.help summary { cursor:pointer; color:var(--ink); padding:8px 0; }
   details.help p { margin:8px 0; line-height:1.55; }
-  footer {
-    text-align:center; color:var(--muted); font-size:12px; padding:32px 0 24px;
-  }
+  footer { text-align:center; color:var(--muted); font-size:12px; padding:20px 0; }
 </style>
 </head>
 <body>
 <header>
   <h1>Sign Library</h1>
-  <p>Basket Case Grocer · 46 reusable signs · click any to edit in Canva</p>
+  <p>Basket Case Grocer · 46 reusable signs · click to select, download as a single PDF</p>
 </header>
 <section class="controls">
   <input id="search" class="search" type="search"
@@ -116,13 +156,21 @@
 <main id="grid"></main>
 <details class="help">
   <summary>How to use this</summary>
-  <p>1. Find the sign you need (search by name or filter by category).</p>
-  <p>2. Click the sign to open it in Canva. The editor will jump straight to that page of the master template.</p>
-  <p>3. In Canva: <strong>File → Make a copy</strong> so you don't edit the master, then change text, save, and download as PNG/PDF for printing.</p>
-  <p>If you don't have access to the master template, ask Sam to share it with your Canva account.</p>
+  <p><strong>Print existing signs:</strong> click any sign tile to add it to your selection. The bar at the bottom shows how many you have selected. Click <strong>Download PDF</strong> to get a single PDF with all selected signs packed two-per-page on letter paper.</p>
+  <p><strong>Edit a sign before printing:</strong> click the small "edit in Canva" link in the corner of the tile. Make a copy in Canva first so the master stays clean.</p>
+  <p><strong>Make a brand-new sign:</strong> coming soon — five blank starter templates will appear here for net-new signage.</p>
 </details>
 <footer>Basket Case Grocer · 1801 5th Ave N Nashville</footer>
 
+<div id="actionbar" class="actionbar">
+  <div class="summary"><strong id="ab-count">0</strong> sign<span id="ab-plural">s</span> selected</div>
+  <div class="ab-btns">
+    <button class="ab-btn secondary" id="ab-clear">Clear</button>
+    <button class="ab-btn primary" id="ab-download">Download PDF</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script id="data" type="application/json">{
   "design_id": "DAHJTDdElIs",
   "edit_base_url": "https://www.canva.com/design/DAHJTDdElIs/edit",
@@ -182,15 +230,20 @@
     {"page": 45, "name": "Suggestion Box · Win a Gift Card","category": "marketing"},
     {"page": 46, "name": "(Page 46)",                 "category": "marketing"}
   ]
-}
-</script>
+}</script>
 <script>
   const data = JSON.parse(document.getElementById('data').textContent);
   const editBase = data.edit_base_url;
-  let activeFilter = "all";
-  let searchQuery = "";
+  const padPage = (n) => String(n).padStart(2, '0');
+  const thumbUrl = (page) => `thumbnails/sign-${padPage(page)}.png`;
+  const fullUrl  = (page) => `signs/sign-${padPage(page)}.png`;
+  const canvaUrl = (page) => `${editBase}?page=${page}`;
 
-  // Render category filters
+  const selected = new Set();   // pages that are currently selected
+  let activeFilter = 'all';
+  let searchQuery = '';
+
+  // ---------- Filters ----------
   const filtersEl = document.getElementById('filters');
   function pillButton(id, label) {
     const b = document.createElement('button');
@@ -208,12 +261,11 @@
   filtersEl.appendChild(pillButton('all', 'All'));
   data.categories.forEach(c => filtersEl.appendChild(pillButton(c.id, c.label)));
 
-  // Search
-  const searchEl = document.getElementById('search');
-  searchEl.addEventListener('input', e => { searchQuery = e.target.value.toLowerCase().trim(); render(); });
+  document.getElementById('search').addEventListener('input', e => {
+    searchQuery = e.target.value.toLowerCase().trim(); render();
+  });
 
-  // Render
-  function urlFor(t) { return editBase + '?page=' + t.page; }
+  // ---------- Render gallery ----------
   function render() {
     const grid = document.getElementById('grid');
     const filtered = data.templates.filter(t => {
@@ -225,7 +277,6 @@
       grid.innerHTML = '<div class="empty">No signs match. Try clearing the search or choosing a different category.</div>';
       return;
     }
-    // Group by category
     const groups = {};
     filtered.forEach(t => { (groups[t.category] = groups[t.category] || []).push(t); });
     grid.innerHTML = '';
@@ -239,39 +290,158 @@
       groupEl.appendChild(h);
       const gridEl = document.createElement('div');
       gridEl.className = 'grid';
-      items.sort((a,b) => a.page - b.page).forEach(t => {
-        const tile = document.createElement('div');
-        tile.className = 'tile';
-        const badge = document.createElement('span');
-        badge.className = 'badge cat-' + t.category;
-        badge.textContent = (data.categories.find(c => c.id === t.category) || {}).label || t.category;
-        tile.appendChild(badge);
-        const nameEl = document.createElement('div');
-        nameEl.className = 'name';
-        nameEl.textContent = t.name;
-        tile.appendChild(nameEl);
-        const actions = document.createElement('div');
-        actions.className = 'actions';
-        const a = document.createElement('a');
-        a.className = 'go';
-        a.href = urlFor(t);
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.textContent = 'Open in Canva';
-        actions.appendChild(a);
-        const pn = document.createElement('span');
-        pn.className = 'page-num';
-        pn.textContent = 'p.' + t.page;
-        actions.appendChild(pn);
-        tile.appendChild(actions);
-        gridEl.appendChild(tile);
-      });
+      items.sort((a,b) => a.page - b.page).forEach(t => gridEl.appendChild(buildTile(t, cat)));
       groupEl.appendChild(gridEl);
       grid.appendChild(groupEl);
     });
   }
 
+  function buildTile(t, cat) {
+    const tile = document.createElement('div');
+    tile.className = 'tile' + (selected.has(t.page) ? ' selected' : '');
+    tile.dataset.page = t.page;
+    // Thumbnail
+    const thumb = document.createElement('div'); thumb.className = 'thumb';
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.src = thumbUrl(t.page);
+    img.alt = t.name;
+    thumb.appendChild(img);
+    tile.appendChild(thumb);
+    // Meta
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const badge = document.createElement('span');
+    badge.className = 'badge cat-' + t.category;
+    badge.textContent = cat.label;
+    meta.appendChild(badge);
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = t.name;
+    meta.appendChild(name);
+    const footer = document.createElement('div');
+    footer.className = 'footer-row';
+    const canvaLink = document.createElement('a');
+    canvaLink.className = 'canva-link';
+    canvaLink.href = canvaUrl(t.page);
+    canvaLink.target = '_blank';
+    canvaLink.rel = 'noopener noreferrer';
+    canvaLink.textContent = 'edit in Canva ↗';
+    canvaLink.addEventListener('click', e => e.stopPropagation()); // don't toggle selection when clicking the canva link
+    footer.appendChild(canvaLink);
+    const pageNum = document.createElement('span'); pageNum.textContent = 'p.' + t.page;
+    footer.appendChild(pageNum);
+    meta.appendChild(footer);
+    tile.appendChild(meta);
+    // Click toggles selection
+    tile.addEventListener('click', () => {
+      if (selected.has(t.page)) selected.delete(t.page); else selected.add(t.page);
+      tile.classList.toggle('selected');
+      updateActionBar();
+    });
+    return tile;
+  }
+
+  // ---------- Action bar ----------
+  const ab = document.getElementById('actionbar');
+  const abCount = document.getElementById('ab-count');
+  const abPlural = document.getElementById('ab-plural');
+  const abDownload = document.getElementById('ab-download');
+  const abClear = document.getElementById('ab-clear');
+  function updateActionBar() {
+    const n = selected.size;
+    abCount.textContent = n;
+    abPlural.style.display = n === 1 ? 'none' : 'inline';
+    ab.classList.toggle('visible', n > 0);
+  }
+  abClear.addEventListener('click', () => {
+    selected.clear();
+    document.querySelectorAll('.tile.selected').forEach(t => t.classList.remove('selected'));
+    updateActionBar();
+  });
+
+  // ---------- PDF download ----------
+  // Pack 2 signs per letter page (8.5 x 11 in). Landscape signs stacked vertically.
+  // Portrait signs (page 21 only currently) get one per page.
+  abDownload.addEventListener('click', async () => {
+    if (!selected.size) return;
+    abDownload.disabled = true;
+    abDownload.textContent = 'Building…';
+    try {
+      const pages = [...selected].sort((a,b) => a-b);
+      // Load all images
+      const imgs = await Promise.all(pages.map(p => loadImage(fullUrl(p))));
+      // Determine orientation per image
+      const items = imgs.map((im, i) => ({page: pages[i], img: im, w: im.naturalWidth, h: im.naturalHeight, portrait: im.naturalHeight > im.naturalWidth}));
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({unit: 'in', format: 'letter', orientation: 'portrait'});
+
+      // Layout constants
+      const PAGE_W = 8.5, PAGE_H = 11.0;
+      const M = 0.4; // margin
+      const usableW = PAGE_W - 2*M;
+      const usableH = PAGE_H - 2*M;
+      const gap = 0.3; // gap between two stacked signs
+      const slotH = (usableH - gap) / 2;
+
+      let firstPage = true;
+      let i = 0;
+      while (i < items.length) {
+        if (!firstPage) doc.addPage();
+        firstPage = false;
+        const a = items[i];
+        const b = (i + 1 < items.length) ? items[i + 1] : null;
+        // If A is portrait, give it the full page on its own
+        if (a.portrait) {
+          drawFitted(doc, a, M, M, usableW, usableH);
+          i += 1;
+          continue;
+        }
+        // A landscape: top half
+        drawFitted(doc, a, M, M, usableW, slotH);
+        // B (if exists and landscape): bottom half
+        if (b && !b.portrait) {
+          drawFitted(doc, b, M, M + slotH + gap, usableW, slotH);
+          i += 2;
+        } else if (b && b.portrait) {
+          // B is portrait — give it its own page next
+          i += 1;
+        } else {
+          i += 1;
+        }
+      }
+
+      doc.save('Basket_Case_Signs_' + items.length + '.pdf');
+    } catch (e) {
+      console.error(e);
+      alert('Sorry — PDF build failed: ' + e.message);
+    } finally {
+      abDownload.disabled = false;
+      abDownload.textContent = 'Download PDF';
+    }
+  });
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const im = new Image();
+      im.onload = () => resolve(im);
+      im.onerror = reject;
+      im.src = src;
+    });
+  }
+
+  // Draw image scaled to fit slot (slotW x slotH), centered
+  function drawFitted(doc, item, slotX, slotY, slotW, slotH) {
+    const ar = item.w / item.h;
+    let w = slotW, h = slotW / ar;
+    if (h > slotH) { h = slotH; w = slotH * ar; }
+    const x = slotX + (slotW - w) / 2;
+    const y = slotY + (slotH - h) / 2;
+    doc.addImage(item.img, 'PNG', x, y, w, h, undefined, 'FAST');
+  }
+
   render();
+  updateActionBar();
 </script>
 </body>
 </html>
